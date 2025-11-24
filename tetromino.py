@@ -46,29 +46,27 @@ class Tetromino:
         return TETROMINOS_COLORS[self.shape_name]
 
     def rotate(self, direction=1):
-        """Вращает фигуру с проверкой wall kicks"""
-        if self.shape_name == 'O':  # Квадрат не вращается
+        if self.shape_name == "O":  # Квадрат не вращается
             return True
-            
+
         old_rotation = self.rotation
         old_x, old_y = self.x, self.y
-        
-        # Пробуем новое вращение
+
         self.rotation = (self.rotation + direction) % 4
-        
+        transition = (old_rotation, self.rotation)
+
         # Получаем данные для wall kick
-        kick_data = WALL_KICK_DATA['I'] if self.shape_name == 'I' else WALL_KICK_DATA['default']
-        kicks = kick_data[old_rotation]
-        
+        kick_data = WALL_KICK_DATA["I"] if self.shape_name == "I" else WALL_KICK_DATA["default"]
+        kicks = kick_data.get(transition, [(0, 0)])
+
         # Пробуем все возможные сдвиги
-        for kick in kicks:
-            dx, dy = kick
+        for dx, dy in kicks:
             self.x = old_x + dx
             self.y = old_y + dy
-            
+
             if self.is_valid_position():
                 return True  # Вращение успешно
-        
+
         # Если ни один вариант не подошел - откатываем
         self.rotation = old_rotation
         self.x, self.y = old_x, old_y
