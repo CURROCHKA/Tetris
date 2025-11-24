@@ -1,4 +1,4 @@
-from random import choice
+from random import choice, randint
 
 import pygame
 
@@ -14,9 +14,9 @@ class Tetromino:
         self.board = board
         self.block_size = board.block_size
         self.shape_name = choice(list(TETROMINOS.keys()))
-        self.rotation = 0
+        self.rotation = randint(0, 3)
         self.x = 0
-        self.y = 0
+        self.y = -1
     
     def is_valid_position(self, dx=0, dy=0, rotation=None):
         """Проверяет валидность позиции фигуры"""
@@ -71,6 +71,11 @@ class Tetromino:
         self.rotation = old_rotation
         self.x, self.y = old_x, old_y
         return False
+    
+    def lock(self):
+        for x, y in self.get_cells():
+            self.board.grid[y][x] = 1  # Блок занят
+            self.board.colors[y][x] = self.color
 
     def move(self, dx, dy):
         if self.is_valid_position(dx, dy):
@@ -78,6 +83,11 @@ class Tetromino:
             self.y += dy
             return True
         return False
+    
+    def hard_drop(self):
+        while self.move(0, 1):
+            pass
+        self.lock()
 
     def get_cells(self):
         cells = []
@@ -92,7 +102,7 @@ class Tetromino:
         shape = self.shape
         for row_idx, row in enumerate(shape):
             for col_idx, cell in enumerate(row):
-                if cell:
+                if cell and self.y + row_idx >= 0:
                     pygame.draw.rect(
                         surface,
                         self.color,

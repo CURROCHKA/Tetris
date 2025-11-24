@@ -60,8 +60,13 @@ class Game:
                     self.tetromino.move(1, 0)
                 elif event.key == pygame.K_DOWN:
                     self.tetromino.move(0, 1)
+                elif event.key == pygame.K_SPACE:
+                    self.tetromino.hard_drop()
+                    self.tetromino = self.get_tetromino()
                 elif event.key == pygame.K_UP:
-                    self.tetromino.rotate()
+                    self.tetromino.rotate(1)
+                elif event.key == pygame.K_z:
+                    self.tetromino.rotate(-1)
 
     def update_window(self):
         self.win.fill((0, 0, 0))  # Fill the window with black color

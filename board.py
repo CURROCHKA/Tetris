@@ -14,6 +14,7 @@ class Board:
         self.width, self.height = BOARD_SIZE
         self.block_size = block_size
         self.grid = [[0 for _ in range(self.width)] for _ in range(self.height)]
+        self.colors = [[BOARD_BLOCK_COLOR for _ in range(self.width)] for _ in range(self.height)]
 
     def draw(self, surface: pygame.Surface):
         self.draw_blocks(surface)
@@ -40,7 +41,7 @@ class Board:
             for x in range(self.width):
                 pygame.draw.rect(
                     surface,
-                    BOARD_BLOCK_COLOR,
+                    self.colors[y][x],
                     (
                         self.x + x * self.block_size,
                         self.y + y * self.block_size,
