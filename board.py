@@ -4,11 +4,12 @@ from config import (
     BOARD_SIZE,
     BOARD_BLOCK_COLOR,
     BOARD_LINE_COLOR,
+    BOARD_LINE_THICKNESS,
 )
 
 
 class Board:
-    def __init__(self, x: float, y: float, block_size: float):
+    def __init__(self, x: float, y: float, block_size: int):
         self.x = x
         self.y = y
         self.width, self.height = BOARD_SIZE
@@ -21,19 +22,23 @@ class Board:
         self.draw_lines(surface)
 
     def draw_lines(self, surface: pygame.Surface):
+        # Vertical lines
         for x in range(self.width + 1):
             pygame.draw.line(
                 surface,
                 BOARD_LINE_COLOR,
                 (self.x + x * self.block_size, self.y),
                 (self.x + x * self.block_size, self.y + self.height * self.block_size),
+                width=BOARD_LINE_THICKNESS,
             )
+        # Horizontal lines
         for y in range(self.height + 1):
             pygame.draw.line(
                 surface,
                 BOARD_LINE_COLOR,
                 (self.x, self.y + y * self.block_size),
                 (self.x + self.width * self.block_size, self.y + y * self.block_size),
+                width=BOARD_LINE_THICKNESS,
             )        
 
     def draw_blocks(self, surface):

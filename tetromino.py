@@ -6,6 +6,7 @@ from config import (
     WALL_KICK_DATA,
     TETROMINOS, 
     TETROMINOS_COLORS,
+    BOARD_LINE_THICKNESS,
 )
 
 
@@ -15,7 +16,11 @@ class Tetromino:
         self.block_size = board.block_size
         self.shape_name = choice(list(TETROMINOS.keys()))
         self.rotation = randint(0, 3)
-        self.x = 0
+
+        if self.shape_name == "O":
+            self.x = self.board.width // 2 - 1
+        else:
+            self.x = self.board.width // 2 - 2
         self.y = -1
     
     def is_valid_position(self, dx=0, dy=0, rotation=None):
@@ -107,10 +112,10 @@ class Tetromino:
                         surface,
                         self.color,
                         (
-                            self.board.x + (self.x + col_idx) * self.block_size + 1,
-                            self.board.y + (self.y + row_idx) * self.block_size + 1,
-                            self.block_size - 1,
-                            self.block_size - 1,
+                            self.board.x + (self.x + col_idx) * self.block_size + BOARD_LINE_THICKNESS,
+                            self.board.y + (self.y + row_idx) * self.block_size + BOARD_LINE_THICKNESS,
+                            self.block_size - BOARD_LINE_THICKNESS,
+                            self.block_size - BOARD_LINE_THICKNESS,
                         ),
                     )
     

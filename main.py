@@ -30,7 +30,7 @@ class Game:
         # Calculate block size to fit the board within the window with margins
         # 20x * 10x = S
         # x = sqrt(S / 200)
-        block_size = sqrt((WIDTH - 2 * horizontal_margin) * (HEIGHT - vertical_margin) / (BOARD_SIZE[0] * BOARD_SIZE[1]))
+        block_size = round(sqrt((WIDTH - 2 * horizontal_margin) * (HEIGHT - vertical_margin) / (BOARD_SIZE[0] * BOARD_SIZE[1])))
         self.board = Board(
             x=horizontal_margin,
             y=vertical_margin,
@@ -54,15 +54,18 @@ class Game:
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 self.running = False
             if event.type == pygame.KEYDOWN:
+                
                 if event.key == pygame.K_LEFT:
                     self.tetromino.move(-1, 0)
                 elif event.key == pygame.K_RIGHT:
                     self.tetromino.move(1, 0)
+                    
                 elif event.key == pygame.K_DOWN:
                     self.tetromino.move(0, 1)
                 elif event.key == pygame.K_SPACE:
                     self.tetromino.hard_drop()
                     self.tetromino = self.get_tetromino()
+
                 elif event.key == pygame.K_UP:
                     self.tetromino.rotate(1)
                 elif event.key == pygame.K_z:
