@@ -44,14 +44,19 @@ class Game:
 
     def run(self):
         while self.running:
-            if self.tetromino is None:
-                if not self.game_over:
-                    self.tetromino = self.get_tetromino()
-                else:
-                    pass
+            if self.game_over:
+                self.running = False
+                continue
 
-            if self.tetromino.fall():
+            if self.tetromino is None:
                 self.tetromino = self.get_tetromino()
+
+            block_locked, lock_above = self.tetromino.fall()
+            if block_locked:
+                self.tetromino = self.get_tetromino()
+            if lock_above:
+                self.game_over = True
+                continue
 
             self.score += self.board.check_lines()
             self.check_events()
@@ -74,8 +79,11 @@ class Game:
                 elif event.key == pygame.K_DOWN:
                     self.tetromino.move(0, 1)
                 elif event.key == pygame.K_SPACE:
-                    self.tetromino.hard_drop()
-                    self.tetromino = self.get_tetromino()
+                    lock_above = self.tetromino.hard_drop()
+                    if lock_above:
+                        self.game_over = True
+                    else:
+                        self.tetromino = self.get_tetromino()
 
                 elif event.key == pygame.K_UP:
                     self.tetromino.rotate(1)

@@ -15,7 +15,7 @@ class Tetromino:
         self.board = board
         self.block_size = board.block_size
         self.shape_name = choice(list(TETROMINOS.keys()))
-        self.rotation = randint(0, 3)
+        self.rotation = 0
 
         if self.shape_name == "O":
             self.x = self.board.width // 2 - 1
@@ -53,19 +53,16 @@ class Tetromino:
     def color(self):
         return TETROMINOS_COLORS[self.shape_name]
     
-    def fall(self):
+    def fall(self) -> tuple[bool, bool]:
         current_time = pygame.time.get_ticks() / 1000  # seconds
         if current_time - self.last_fall >= self.falling_delay:
             if not self.move(0, 1):
-                self.lock()
-                return True  # Фигура зафиксирована
+                locked_above = self.lock()
+                return True, locked_above  # Фигура зафиксирована
             self.last_fall = current_time
-        return False  # Фигура не зафиксирована
+        return False, False  # Фигура не зафиксирована
 
     def rotate(self, direction=1):
-        if self.shape_name == "O":  # Квадрат не вращается
-            return True
-
         old_rotation = self.rotation
         old_x, old_y = self.x, self.y
 
@@ -89,10 +86,15 @@ class Tetromino:
         self.x, self.y = old_x, old_y
         return False
     
-    def lock(self):
+    def lock(self) -> bool:
+        locked_above = False
         for x, y in self.get_cells():
+            if y < 0:
+                locked_above = True
+                continue
             self.board.grid[y][x] = 1  # Блок занят
             self.board.colors[y][x] = self.color
+        return locked_above
 
     def move(self, dx, dy):
         if self.is_valid_position(dx, dy):
@@ -101,10 +103,11 @@ class Tetromino:
             return True
         return False
     
-    def hard_drop(self):
+    def hard_drop(self) -> bool:
         while self.move(0, 1):
             pass
-        self.lock()
+        locked_above = self.lock()
+        return locked_above
 
     def get_cells(self):
         cells = []

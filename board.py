@@ -17,15 +17,25 @@ class Board:
         self.grid = [[0 for _ in range(self.width)] for _ in range(self.height)]
         self.colors = [[BOARD_BLOCK_COLOR for _ in range(self.width)] for _ in range(self.height)]
 
-    def check_lines(self):
+    def check_lines(self):    
         lines_cleared = 0
-        for row_idx in range(self.height - 1, -1, -1):
-            if all(self.grid[row_idx]):
+        new_grid = []
+        new_colors = []
+        
+        for row, color_row in zip(self.grid, self.colors):
+            if not all(row):
+                new_grid.append(row)
+                new_colors.append(color_row)
+            else:
                 lines_cleared += 1
-                del self.grid[row_idx]
-                del self.colors[row_idx]
-                self.grid.insert(0, [0 for _ in range(self.width)])
-                self.colors.insert(0, [BOARD_BLOCK_COLOR for _ in range(self.width)])
+
+        for _ in range(lines_cleared):
+            new_grid.insert(0, [0 for _ in range(self.width)])
+            new_colors.insert(0, [BOARD_BLOCK_COLOR for _ in range(self.width)])
+
+        self.grid = new_grid
+        self.colors = new_colors
+        
         return lines_cleared
 
     def draw(self, surface: pygame.Surface):
@@ -59,9 +69,9 @@ class Board:
                     surface,
                     self.colors[y][x],
                     (
-                        self.x + x * self.block_size,
-                        self.y + y * self.block_size,
-                        self.block_size,
-                        self.block_size
+                        self.x + x * self.block_size + BOARD_LINE_THICKNESS,
+                        self.y + y * self.block_size + BOARD_LINE_THICKNESS,
+                        self.block_size - BOARD_LINE_THICKNESS,
+                        self.block_size - BOARD_LINE_THICKNESS,
                     ),
                 )
