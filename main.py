@@ -74,6 +74,7 @@ class Game:
         self.hold_swapped = False
 
         self.soft_drop = False
+
         self.game_over = False
         self.total_lines_cleared = 0
         self.score = 0
@@ -113,20 +114,22 @@ class Game:
             if not self.soft_drop:
                 self.soft_drop = True
                 self.tetromino.change_fall_delay(SOFT_DROP_DELAY)
+        if pressed_keys[pygame.K_LEFT] or pressed_keys[pygame.K_a]:
+            self.tetromino.move(-1, 0)
+        if pressed_keys[pygame.K_RIGHT] or pressed_keys[pygame.K_d]:
+            self.tetromino.move(1, 0)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 self.running = False
             if event.type == pygame.KEYDOWN:
                 
-                if event.key == pygame.K_LEFT:
+                if event.key in (pygame.K_LEFT, pygame.K_a):
                     self.tetromino.move(-1, 0)
-                elif event.key == pygame.K_RIGHT:
+                elif event.key in (pygame.K_RIGHT, pygame.K_d):
                     self.tetromino.move(1, 0)
                     
-                # elif event.key == pygame.K_DOWN:
-                #     self.tetromino.move(0, 1)
-                elif event.key == pygame.K_SPACE:
+                if event.key == pygame.K_SPACE:
                     lock_above = self.tetromino.hard_drop()
                     if lock_above:
                         self.game_over = True
@@ -173,7 +176,8 @@ class Game:
             temp_tetromino = Tetromino(shape_name=shape_name, board=self.board)
             temp_tetromino.swap_board(self.next_board, y=idx * 4 + 1, lock=True)
 
-        self.hold_swapped = False    
+        self.hold_swapped = False
+        self.soft_drop = False    
         return Tetromino(shape_name=tetromino_name, board=self.board, level=self.level)
     
     def check_level_up(self):

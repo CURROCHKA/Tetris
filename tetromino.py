@@ -8,6 +8,7 @@ from config import (
     TETROMINOS_COLORS,
     BOARD_LINE_THICKNESS,
     LEVEL_SPEEDS,
+    MOVE_DELAY,
 )
 
 
@@ -17,14 +18,16 @@ class Tetromino:
         self.board = board
         self.block_size = board.block_size
         self.color = TETROMINOS_COLORS[self.shape_name]
+        self._level = level
         
         self.x, self.y = 0, 0
         self.rotation = 0
         self.reset_position()
 
+        self.last_move = pygame.time.get_ticks() / 1000
+
         self.last_fall = pygame.time.get_ticks() / 1000
-        self.initial_delay = LEVEL_SPEEDS[level]
-        self.falling_delay = self.initial_delay
+        self.falling_delay = LEVEL_SPEEDS[level]
     
     def is_valid_position(self, dx=0, dy=0, rotation=None):
         """Проверяет валидность позиции фигуры"""
@@ -89,9 +92,13 @@ class Tetromino:
                 self.board.colors[y][x] = self.color
         return locked_above
 
-    def move(self, dx, dy):
+    def move(self, dx, dy) -> bool:
         if self.is_valid_position(dx, dy):
-            self.x += dx
+            if dx != 0:
+                current_time = pygame.time.get_ticks() / 1000
+                if current_time - self.last_move >= MOVE_DELAY:
+                    self.x += dx
+                    self.last_move = current_time
             self.y += dy
             return True
         return False
@@ -164,4 +171,4 @@ class Tetromino:
         self.falling_delay = new_delay
 
     def reset_fall_delay(self):
-        self.falling_delay = self.initial_delay
+        self.falling_delay = LEVEL_SPEEDS[self._level]

@@ -2,15 +2,18 @@ WIDTH = 800
 HEIGHT = 600
 FPS = 60
 
-BOARD_SIZE = (10, 20)  # Width, Height in blocks
-HOLD_BOARD_SIZE = (4, 4)  # Width, Height in blocks
-NEXT_BOARD_SIZE = (4, 12)  # Width, Height in blocks
+# Width, Height in blocks
+BOARD_SIZE = (10, 20)     
+HOLD_BOARD_SIZE = (4, 4)
+NEXT_BOARD_SIZE = (4, 12)
+
 BOARD_LINE_THICKNESS = 1
 
 HORIZONTAL_MARGIN_RATIO = 3
 VERTICAL_MARGIN_RATIO = 8
 
 SOFT_DROP_DELAY = 0.05  # seconds per cell when soft dropping
+MOVE_DELAY = 0.1       # seconds between moves when holding left/right
 
 TETROMINOS_COLORS = {
     "I": (0, 255, 255),
