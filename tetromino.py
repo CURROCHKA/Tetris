@@ -23,7 +23,8 @@ class Tetromino:
         self.reset_position()
 
         self.last_fall = pygame.time.get_ticks() / 1000
-        self.falling_delay = LEVEL_SPEEDS[level]
+        self.initial_delay = LEVEL_SPEEDS[level]
+        self.falling_delay = self.initial_delay
     
     def is_valid_position(self, dx=0, dy=0, rotation=None):
         """Проверяет валидность позиции фигуры"""
@@ -158,3 +159,9 @@ class Tetromino:
             self.board.reset()
         if lock:
             self.lock()
+
+    def change_fall_delay(self, new_delay: float):
+        self.falling_delay = new_delay
+
+    def reset_fall_delay(self):
+        self.falling_delay = self.initial_delay

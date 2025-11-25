@@ -19,10 +19,10 @@ from config import (
     SCORE_DATA,
     MAX_LEVEL,
     TETROMINOS,
+    SOFT_DROP_DELAY,
 )
 
 
-# TODO: add soft drop scoring
 # TODO: add animations
 # TODO: add music and sound effects
 # TODO: add pause functionality
@@ -54,11 +54,6 @@ class Game:
             board_size=BOARD_SIZE,
             )
 
-        self.tetrominos = []
-        self.tetromino = None
-        self.hold = None
-        self.hold_swapped = False
-
         self.hold_board = Board(
             x=horizontal_margin / 2 - HOLD_BOARD_SIZE[0] * block_size / 2,
             y=vertical_margin,
@@ -73,6 +68,12 @@ class Game:
             board_size=NEXT_BOARD_SIZE,
         )
 
+        self.tetrominos = []
+        self.tetromino = None
+        self.hold = None
+        self.hold_swapped = False
+
+        self.soft_drop = False
         self.game_over = False
         self.total_lines_cleared = 0
         self.score = 0
@@ -92,6 +93,8 @@ class Game:
             block_locked, lock_above = self.tetromino.fall()
             if block_locked:
                 self.tetromino = self.get_tetromino()
+            elif self.soft_drop:
+                self.score += 1  # 1 point per soft drop cell
             if lock_above:
                 self.game_over = True
                 continue
@@ -105,6 +108,12 @@ class Game:
         pygame.quit()
 
     def check_events(self):
+        pressed_keys = pygame.key.get_pressed()
+        if pressed_keys[pygame.K_DOWN] or pressed_keys[pygame.K_s]:
+            if not self.soft_drop:
+                self.soft_drop = True
+                self.tetromino.change_fall_delay(SOFT_DROP_DELAY)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 self.running = False
@@ -115,8 +124,8 @@ class Game:
                 elif event.key == pygame.K_RIGHT:
                     self.tetromino.move(1, 0)
                     
-                elif event.key == pygame.K_DOWN:
-                    self.tetromino.move(0, 1)
+                # elif event.key == pygame.K_DOWN:
+                #     self.tetromino.move(0, 1)
                 elif event.key == pygame.K_SPACE:
                     lock_above = self.tetromino.hard_drop()
                     if lock_above:
@@ -132,6 +141,11 @@ class Game:
                 elif event.key == pygame.K_c:
                     if not self.hold_swapped:
                         self.swap_hold()
+
+            if event.type == pygame.KEYUP:
+                if event.key in (pygame.K_DOWN, pygame.K_s):
+                    self.soft_drop = False
+                    self.tetromino.reset_fall_delay()
 
     def update_window(self):
         self.win.fill((0, 0, 0))  # Fill the window with black color

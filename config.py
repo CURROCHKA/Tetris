@@ -10,6 +10,8 @@ BOARD_LINE_THICKNESS = 1
 HORIZONTAL_MARGIN_RATIO = 3
 VERTICAL_MARGIN_RATIO = 8
 
+SOFT_DROP_DELAY = 0.05  # seconds per cell when soft dropping
+
 TETROMINOS_COLORS = {
     "I": (0, 255, 255),
     "O": (255, 255, 0),
