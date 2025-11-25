@@ -27,9 +27,6 @@ class Tetromino:
 
         self.last_fall = pygame.time.get_ticks() / 1000 # seconds
         self.falling_delay = LEVEL_SPEEDS[level] # seconds
-
-    def update_level(self, level: int):
-        self.falling_delay = LEVEL_SPEEDS[level]
     
     def is_valid_position(self, dx=0, dy=0, rotation=None):
         """Проверяет валидность позиции фигуры"""
@@ -49,10 +46,6 @@ class Tetromino:
                     if new_y >= 0 and self.board.grid[new_y][new_x]:
                         return False
         return True
-
-    @property
-    def shape(self):
-        return TETROMINOS[self.shape_name][self.rotation]
     
     def fall(self) -> tuple[bool, bool]:
         current_time = pygame.time.get_ticks() / 1000  # seconds
@@ -93,8 +86,9 @@ class Tetromino:
             if y < 0:
                 locked_above = True
                 continue
-            self.board.grid[y][x] = 1  # Блок занят
-            self.board.colors[y][x] = self.color
+            if 0 <= x < self.board.width and 0 <= y < self.board.height:
+                self.board.grid[y][x] = 1  # Блок занят
+                self.board.colors[y][x] = self.color
         return locked_above
 
     def move(self, dx, dy):
@@ -119,19 +113,34 @@ class Tetromino:
                     cells.append((self.x + col_idx, self.y + row_idx))
         return cells
     
+    def _draw_block(self, surface: pygame.Surface, row_idx: int, col_idx: int, color: tuple[int, int, int]):
+        pygame.draw.rect(
+            surface,
+            color,
+            (
+                self.board.x + (self.x + col_idx) * self.block_size + BOARD_LINE_THICKNESS,
+                self.board.y + (self.y + row_idx) * self.block_size + BOARD_LINE_THICKNESS,
+                self.block_size - BOARD_LINE_THICKNESS,
+                self.block_size - BOARD_LINE_THICKNESS,
+            ),
+        )
+    
     def draw(self, surface):
         shape = self.shape
+        old_x, old_y = self.x, self.y
+
         for row_idx, row in enumerate(shape):
             for col_idx, cell in enumerate(row):
-                if cell and self.y + row_idx >= 0:
-                    pygame.draw.rect(
-                        surface,
-                        self.color,
-                        (
-                            self.board.x + (self.x + col_idx) * self.block_size + BOARD_LINE_THICKNESS,
-                            self.board.y + (self.y + row_idx) * self.block_size + BOARD_LINE_THICKNESS,
-                            self.block_size - BOARD_LINE_THICKNESS,
-                            self.block_size - BOARD_LINE_THICKNESS,
-                        ),
-                    )
-    
+                if cell:
+                    if self.y + row_idx >= 0:
+                        self._draw_block(surface, row_idx, col_idx, self.color)
+                    while self.is_valid_position(0, 1):
+                        self.y += 1
+                    if self.y == old_y:
+                        continue
+                    self._draw_block(surface, row_idx, col_idx, (128, 128, 128))
+                    self.x, self.y = old_x, old_y
+
+    @property
+    def shape(self):
+        return TETROMINOS[self.shape_name][self.rotation]

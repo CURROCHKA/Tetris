@@ -8,6 +8,19 @@ BOARD_LINE_THICKNESS = 1
 HORIZONTAL_MARGIN_RATIO = 3
 VERTICAL_MARGIN_RATIO = 8
 
+TETROMINOS_COLORS = {
+    "I": (0, 255, 255),
+    "O": (255, 255, 0),
+    "T": (128, 0, 128),
+    "S": (0, 255, 0),
+    "Z": (255, 0, 0),
+    "J": (0, 0, 255),
+    "L": (255, 165, 0),
+}
+
+BOARD_BLOCK_COLOR = (0, 0, 0)
+BOARD_LINE_COLOR = (255, 255, 255)
+
 # Очки за очистку линий (базовые значения)
 # 1 линия: 40 * (level + 1)
 # 2 линии: 100 * (level + 1)
@@ -17,7 +30,6 @@ SCORE_DATA = {1: 40, 2: 100, 3: 300, 4: 1200}
 
 # Скорость падения (в секундах на клетку) для уровней 0-29
 # Основано на NES NTSC версии (60 FPS)
-MAX_LEVEL = 30
 LEVEL_SPEEDS = {
     0: 0.8,   # 48 frames
     1: 0.72,  # 43 frames
@@ -41,6 +53,7 @@ LEVEL_SPEEDS = {
     19: 0.03, # 2 frames (очень быстро)
     29: 0.016 # 1 frame (нереально)
 }
+MAX_LEVEL = max(LEVEL_SPEEDS.keys())
 
 # Офсеты для вращения (wall kick data)
 # Формат: [ [x1, y1], [x2, y2], ... ] - попытки сдвига
@@ -198,15 +211,3 @@ TETROMINOS = {
          [1, 0, 0]]
     ]
 }
-TETROMINOS_COLORS = {
-    "I": (0, 255, 255),
-    "O": (255, 255, 0),
-    "T": (128, 0, 128),
-    "S": (0, 255, 0),
-    "Z": (255, 0, 0),
-    "J": (0, 0, 255),
-    "L": (255, 165, 0),
-}
-
-BOARD_BLOCK_COLOR = (0, 0, 0)
-BOARD_LINE_COLOR = (255, 255, 255)

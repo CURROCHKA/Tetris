@@ -20,8 +20,6 @@ from config import (
 )
 
 
-# TODO: add 7-bag randomizer
-# TODO: add ghost piece
 # TODO: add hold piece
 # TODO: add soft drop scoring
 # TODO: add animations
