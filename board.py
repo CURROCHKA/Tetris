@@ -1,7 +1,6 @@
 import pygame
 
 from config import (
-    BOARD_SIZE,
     BOARD_BLOCK_COLOR,
     BOARD_LINE_COLOR,
     BOARD_LINE_THICKNESS,
@@ -9,10 +8,10 @@ from config import (
 
 
 class Board:
-    def __init__(self, x: float, y: float, block_size: int):
+    def __init__(self, x: float, y: float, block_size: int, board_size: tuple[int, int]):
         self.x = x
         self.y = y
-        self.width, self.height = BOARD_SIZE
+        self.width, self.height = board_size
         self.block_size = block_size
         self.grid = [[0 for _ in range(self.width)] for _ in range(self.height)]
         self.colors = [[BOARD_BLOCK_COLOR for _ in range(self.width)] for _ in range(self.height)]
@@ -75,3 +74,7 @@ class Board:
                         self.block_size - BOARD_LINE_THICKNESS,
                     ),
                 )
+
+    def reset(self):
+        self.grid = [[0 for _ in range(self.width)] for _ in range(self.height)]
+        self.colors = [[BOARD_BLOCK_COLOR for _ in range(self.width)] for _ in range(self.height)]

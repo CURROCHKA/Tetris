@@ -14,13 +14,14 @@ from config import (
     HORIZONTAL_MARGIN_RATIO,
     VERTICAL_MARGIN_RATIO,
     BOARD_SIZE,
+    HOLD_BOARD_SIZE,
+    NEXT_BOARD_SIZE,
     SCORE_DATA,
     MAX_LEVEL,
     TETROMINOS,
 )
 
 
-# TODO: add hold piece
 # TODO: add soft drop scoring
 # TODO: add animations
 # TODO: add music and sound effects
@@ -50,10 +51,28 @@ class Game:
             x=horizontal_margin,
             y=vertical_margin,
             block_size=block_size,
+            board_size=BOARD_SIZE,
             )
 
         self.tetrominos = []
         self.tetromino = None
+        self.hold = None
+        self.hold_swapped = False
+
+        self.hold_board = Board(
+            x=horizontal_margin / 2 - HOLD_BOARD_SIZE[0] * block_size / 2,
+            y=vertical_margin,
+            block_size=block_size,
+            board_size=HOLD_BOARD_SIZE,
+        )
+
+        self.next_board = Board(
+            x=WIDTH - horizontal_margin / 2 - NEXT_BOARD_SIZE[0] * block_size / 2,
+            y=vertical_margin,
+            block_size=block_size,
+            board_size=NEXT_BOARD_SIZE,
+        )
+
         self.game_over = False
         self.total_lines_cleared = 0
         self.score = 0
@@ -110,18 +129,38 @@ class Game:
                 elif event.key == pygame.K_z:
                     self.tetromino.rotate(-1)
 
+                elif event.key == pygame.K_c:
+                    if not self.hold_swapped:
+                        self.swap_hold()
+
     def update_window(self):
         self.win.fill((0, 0, 0))  # Fill the window with black color
+    
         self.print_stats()
+
         self.board.draw(self.win)
+        self.hold_board.draw(self.win)
+        self.next_board.draw(self.win)
+
         self.tetromino.draw(self.win)
         pygame.display.flip()  # Update the display
 
     def get_tetromino(self):
-        if not self.tetrominos:
-            self.tetrominos = list(TETROMINOS.keys())
-            shuffle(self.tetrominos)            
-        return Tetromino(shape_name=self.tetrominos.pop(0), board=self.board, level=self.level)
+        if len(self.tetrominos) < 7:
+            new_bag = list(TETROMINOS.keys())
+            shuffle(new_bag)
+            self.tetrominos.extend(new_bag)
+
+        tetromino_name = self.tetrominos.pop(0)
+        
+        self.next_board.reset()
+
+        for idx, shape_name in enumerate(self.tetrominos[:3]):
+            temp_tetromino = Tetromino(shape_name=shape_name, board=self.board)
+            temp_tetromino.swap_board(self.next_board, y=idx * 4 + 1, lock=True)
+
+        self.hold_swapped = False    
+        return Tetromino(shape_name=tetromino_name, board=self.board, level=self.level)
     
     def check_level_up(self):
         new_level = self.total_lines_cleared // 10
@@ -132,6 +171,20 @@ class Game:
         if lines > 0:
             self.total_lines_cleared += lines
             self.score += SCORE_DATA[lines] * (self.level + 1)
+
+    def swap_hold(self):
+        if self.hold is None:
+            self.hold = self.tetromino
+            self.hold.swap_board(self.hold_board, y=1, lock=True)
+            
+            self.tetromino = self.get_tetromino()
+        else:
+            self.hold, self.tetromino = self.tetromino, self.hold
+
+            self.hold.swap_board(self.hold_board, y=1, board_reset=True, lock=True)
+
+            self.tetromino.swap_board(self.board)
+        self.hold_swapped = True
 
     def print_stats(self):
         score_render = self.font.render(f"Score: {self.score}", 1, "yellow")

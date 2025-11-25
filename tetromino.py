@@ -17,16 +17,13 @@ class Tetromino:
         self.board = board
         self.block_size = board.block_size
         self.color = TETROMINOS_COLORS[self.shape_name]
+        
+        self.x, self.y = 0, 0
         self.rotation = 0
+        self.reset_position()
 
-        if self.shape_name == "O":
-            self.x = self.board.width // 2 - 1
-        else:
-            self.x = self.board.width // 2 - 2
-        self.y = -1
-
-        self.last_fall = pygame.time.get_ticks() / 1000 # seconds
-        self.falling_delay = LEVEL_SPEEDS[level] # seconds
+        self.last_fall = pygame.time.get_ticks() / 1000
+        self.falling_delay = LEVEL_SPEEDS[level]
     
     def is_valid_position(self, dx=0, dy=0, rotation=None):
         """Проверяет валидность позиции фигуры"""
@@ -48,7 +45,7 @@ class Tetromino:
         return True
     
     def fall(self) -> tuple[bool, bool]:
-        current_time = pygame.time.get_ticks() / 1000  # seconds
+        current_time = pygame.time.get_ticks() / 1000
         if current_time - self.last_fall >= self.falling_delay:
             if not self.move(0, 1):
                 locked_above = self.lock()
@@ -144,3 +141,20 @@ class Tetromino:
     @property
     def shape(self):
         return TETROMINOS[self.shape_name][self.rotation]
+    
+    def reset_position(self, y: int = -1):
+        if self.shape_name == "O":
+            self.x = self.board.width // 2 - 1
+        else:
+            self.x = self.board.width // 2 - 2
+        self.y = y
+        self.rotation = 0
+
+    def swap_board(self, new_board, y: int = -1, board_reset: bool = False, lock: bool = False):
+        self.board = new_board
+        self.block_size = new_board.block_size
+        self.reset_position(y)
+        if board_reset:
+            self.board.reset()
+        if lock:
+            self.lock()
