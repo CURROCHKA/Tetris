@@ -1,4 +1,4 @@
-from random import choice
+from random import shuffle
 from math import sqrt
 
 import pygame
@@ -16,7 +16,21 @@ from config import (
     BOARD_SIZE,
     SCORE_DATA,
     MAX_LEVEL,
+    TETROMINOS,
 )
+
+
+# TODO: add 7-bag randomizer
+# TODO: add ghost piece
+# TODO: add hold piece
+# TODO: add soft drop scoring
+# TODO: add animations
+# TODO: add music and sound effects
+# TODO: add pause functionality
+# TODO: add start screen and game over screen
+# TODO: add high score tracking
+# TODO: add settings menu
+# TODO: DAS and ARR implementation
 
 
 class Game:
@@ -40,6 +54,7 @@ class Game:
             block_size=block_size,
             )
 
+        self.tetrominos = []
         self.tetromino = None
         self.game_over = False
         self.total_lines_cleared = 0
@@ -105,7 +120,10 @@ class Game:
         pygame.display.flip()  # Update the display
 
     def get_tetromino(self):
-        return Tetromino(board=self.board, level=self.level)
+        if not self.tetrominos:
+            self.tetrominos = list(TETROMINOS.keys())
+            shuffle(self.tetrominos)            
+        return Tetromino(shape_name=self.tetrominos.pop(0), board=self.board, level=self.level)
     
     def check_level_up(self):
         new_level = self.total_lines_cleared // 10

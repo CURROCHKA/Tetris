@@ -12,10 +12,10 @@ from config import (
 
 
 class Tetromino:
-    def __init__(self, board, level: int = 0):
+    def __init__(self, shape_name: str, board, level: int = 0):
+        self.shape_name = shape_name
         self.board = board
         self.block_size = board.block_size
-        self.shape_name = choice(list(TETROMINOS.keys()))
         self.color = TETROMINOS_COLORS[self.shape_name]
         self.rotation = 0
 
