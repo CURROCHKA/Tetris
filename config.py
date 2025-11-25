@@ -8,6 +8,40 @@ BOARD_LINE_THICKNESS = 1
 HORIZONTAL_MARGIN_RATIO = 3
 VERTICAL_MARGIN_RATIO = 8
 
+# Очки за очистку линий (базовые значения)
+# 1 линия: 40 * (level + 1)
+# 2 линии: 100 * (level + 1)
+# 3 линии: 300 * (level + 1)
+# 4 линии (Tetris): 1200 * (level + 1)
+SCORE_DATA = {1: 40, 2: 100, 3: 300, 4: 1200}
+
+# Скорость падения (в секундах на клетку) для уровней 0-29
+# Основано на NES NTSC версии (60 FPS)
+MAX_LEVEL = 30
+LEVEL_SPEEDS = {
+    0: 0.8,   # 48 frames
+    1: 0.72,  # 43 frames
+    2: 0.63,  # 38 frames
+    3: 0.55,  # 33 frames
+    4: 0.47,  # 28 frames
+    5: 0.38,  # 23 frames
+    6: 0.3,   # 18 frames
+    7: 0.22,  # 13 frames
+    8: 0.13,  # 8 frames
+    9: 0.1,   # 6 frames
+    10: 0.08, # 5 frames
+    11: 0.08,
+    12: 0.08,
+    13: 0.07, # 4 frames
+    14: 0.07,
+    15: 0.07,
+    16: 0.05, # 3 frames
+    17: 0.05,
+    18: 0.05,
+    19: 0.03, # 2 frames (очень быстро)
+    29: 0.016 # 1 frame (нереально)
+}
+
 # Офсеты для вращения (wall kick data)
 # Формат: [ [x1, y1], [x2, y2], ... ] - попытки сдвига
 WALL_KICK_DATA = {

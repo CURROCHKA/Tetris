@@ -14,6 +14,8 @@ from config import (
     HORIZONTAL_MARGIN_RATIO,
     VERTICAL_MARGIN_RATIO,
     BOARD_SIZE,
+    SCORE_DATA,
+    MAX_LEVEL,
 )
 
 
@@ -23,6 +25,8 @@ class Game:
         self.win = pygame.display.set_mode((WIDTH, HEIGHT))
         self.clock = pygame.time.Clock()
         self.running = True
+
+        self.font = pygame.font.SysFont("comicsans", 30)
 
         horizontal_margin = WIDTH / HORIZONTAL_MARGIN_RATIO
         vertical_margin = HEIGHT / VERTICAL_MARGIN_RATIO
@@ -38,7 +42,9 @@ class Game:
 
         self.tetromino = None
         self.game_over = False
+        self.total_lines_cleared = 0
         self.score = 0
+        self.level = 0
 
         pygame.display.set_caption("TETRIS")
 
@@ -57,8 +63,9 @@ class Game:
             if lock_above:
                 self.game_over = True
                 continue
-
-            self.score += self.board.check_lines()
+            
+            self.calculate_score()
+            self.check_level_up()
             self.check_events()
             self.update_window()
             self.clock.tick(FPS)  # Limit to 60 frames per second
@@ -92,13 +99,30 @@ class Game:
 
     def update_window(self):
         self.win.fill((0, 0, 0))  # Fill the window with black color
+        self.print_stats()
         self.board.draw(self.win)
         self.tetromino.draw(self.win)
         pygame.display.flip()  # Update the display
 
     def get_tetromino(self):
-        return Tetromino(board=self.board)
+        return Tetromino(board=self.board, level=self.level)
+    
+    def check_level_up(self):
+        new_level = self.total_lines_cleared // 10
+        self.level = min(new_level, MAX_LEVEL)
 
+    def calculate_score(self):
+        lines = self.board.check_lines()
+        if lines > 0:
+            self.total_lines_cleared += lines
+            self.score += SCORE_DATA[lines] * (self.level + 1)
+
+    def print_stats(self):
+        score_render = self.font.render(f"Score: {self.score}", 1, "yellow")
+        level_render = self.font.render(f"Level: {self.level + 1}", 1, "yellow")
+        self.win.blit(score_render, (0, 0))
+        self.win.blit(level_render, (0, score_render.get_height() + 5))
+        
 
 if __name__ == "__main__":
     game = Game()
