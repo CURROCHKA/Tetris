@@ -1,7 +1,6 @@
 WIDTH = 800
 HEIGHT = 600
 FPS = 60
-TITLE = "TETRIS"
 
 BOARD_SIZE = (10, 20)  # Width, Height in blocks
 BOARD_LINE_THICKNESS = 1

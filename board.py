@@ -17,6 +17,17 @@ class Board:
         self.grid = [[0 for _ in range(self.width)] for _ in range(self.height)]
         self.colors = [[BOARD_BLOCK_COLOR for _ in range(self.width)] for _ in range(self.height)]
 
+    def check_lines(self):
+        lines_cleared = 0
+        for row_idx in range(self.height - 1, -1, -1):
+            if all(self.grid[row_idx]):
+                lines_cleared += 1
+                del self.grid[row_idx]
+                del self.colors[row_idx]
+                self.grid.insert(0, [0 for _ in range(self.width)])
+                self.colors.insert(0, [BOARD_BLOCK_COLOR for _ in range(self.width)])
+        return lines_cleared
+
     def draw(self, surface: pygame.Surface):
         self.draw_blocks(surface)
         self.draw_lines(surface)

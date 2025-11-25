@@ -22,6 +22,9 @@ class Tetromino:
         else:
             self.x = self.board.width // 2 - 2
         self.y = -1
+
+        self.last_fall = pygame.time.get_ticks() / 1000 # seconds
+        self.falling_delay = 0.75 # seconds
     
     def is_valid_position(self, dx=0, dy=0, rotation=None):
         """Проверяет валидность позиции фигуры"""
@@ -49,6 +52,15 @@ class Tetromino:
     @property
     def color(self):
         return TETROMINOS_COLORS[self.shape_name]
+    
+    def fall(self):
+        current_time = pygame.time.get_ticks() / 1000  # seconds
+        if current_time - self.last_fall >= self.falling_delay:
+            if not self.move(0, 1):
+                self.lock()
+                return True  # Фигура зафиксирована
+            self.last_fall = current_time
+        return False  # Фигура не зафиксирована
 
     def rotate(self, direction=1):
         if self.shape_name == "O":  # Квадрат не вращается

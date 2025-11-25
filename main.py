@@ -11,7 +11,6 @@ from config import (
     WIDTH,
     HEIGHT,
     FPS,
-    TITLE,
     HORIZONTAL_MARGIN_RATIO,
     VERTICAL_MARGIN_RATIO,
     BOARD_SIZE,
@@ -37,12 +36,24 @@ class Game:
             block_size=block_size,
             )
 
-        self.tetromino = self.get_tetromino()
+        self.tetromino = None
+        self.game_over = False
+        self.score = 0
 
-        pygame.display.set_caption(TITLE)
+        pygame.display.set_caption("TETRIS")
 
     def run(self):
         while self.running:
+            if self.tetromino is None:
+                if not self.game_over:
+                    self.tetromino = self.get_tetromino()
+                else:
+                    pass
+
+            if self.tetromino.fall():
+                self.tetromino = self.get_tetromino()
+
+            self.score += self.board.check_lines()
             self.check_events()
             self.update_window()
             self.clock.tick(FPS)  # Limit to 60 frames per second
