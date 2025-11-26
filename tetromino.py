@@ -24,8 +24,6 @@ class Tetromino:
         self.rotation = 0
         self.reset_position()
 
-        self.last_move = pygame.time.get_ticks() / 1000
-
         self.last_fall = pygame.time.get_ticks() / 1000
         self.falling_delay = LEVEL_SPEEDS[level]
     
@@ -94,11 +92,7 @@ class Tetromino:
 
     def move(self, dx, dy) -> bool:
         if self.is_valid_position(dx, dy):
-            if dx != 0:
-                current_time = pygame.time.get_ticks() / 1000
-                if current_time - self.last_move >= MOVE_DELAY:
-                    self.x += dx
-                    self.last_move = current_time
+            self.x += dx
             self.y += dy
             return True
         return False

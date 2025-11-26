@@ -13,7 +13,9 @@ HORIZONTAL_MARGIN_RATIO = 3
 VERTICAL_MARGIN_RATIO = 8
 
 SOFT_DROP_DELAY = 0.05  # seconds per cell when soft dropping
-MOVE_DELAY = 0.1       # seconds between moves when holding left/right
+MOVE_DELAY = 0.1        # seconds between moves when holding left/right
+DAS_DELAY = 0.25        # Задержка до начала DAS (0.25 сек)
+ARR_DELAY = 0.05
 
 TETROMINOS_COLORS = {
     "I": (0, 255, 255),

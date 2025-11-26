@@ -20,6 +20,8 @@ from config import (
     MAX_LEVEL,
     TETROMINOS,
     SOFT_DROP_DELAY,
+    DAS_DELAY,
+    ARR_DELAY,
 )
 
 
@@ -74,6 +76,9 @@ class Game:
         self.hold_swapped = False
 
         self.soft_drop = False
+        self.last_move_repeat = 0 # Время последнего повторного движения
+        self.move_held_time = 0   # Время, в течение которого клавиша удерживается
+        self.held_direction = 0   # Направление удерживаемого движения (-1 для влево, 1 для вправо)
 
         self.game_over = False
         self.total_lines_cleared = 0
@@ -100,6 +105,7 @@ class Game:
                 self.game_over = True
                 continue
             
+            self._handle_das_arr()
             self.calculate_score()
             self.check_level_up()
             self.check_events()
@@ -109,27 +115,28 @@ class Game:
         pygame.quit()
 
     def check_events(self):
-        pressed_keys = pygame.key.get_pressed()
-        if pressed_keys[pygame.K_DOWN] or pressed_keys[pygame.K_s]:
-            if not self.soft_drop:
-                self.soft_drop = True
-                self.tetromino.change_fall_delay(SOFT_DROP_DELAY)
-        if pressed_keys[pygame.K_LEFT] or pressed_keys[pygame.K_a]:
-            self.tetromino.move(-1, 0)
-        if pressed_keys[pygame.K_RIGHT] or pressed_keys[pygame.K_d]:
-            self.tetromino.move(1, 0)
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 self.running = False
             if event.type == pygame.KEYDOWN:
                 
                 if event.key in (pygame.K_LEFT, pygame.K_a):
-                    self.tetromino.move(-1, 0)
+                    self.held_direction = -1
+                    self.move_held_time = pygame.time.get_ticks() / 1000
+                    self.tetromino.move(-1, 0) 
+                    self.last_move_repeat = self.move_held_time
                 elif event.key in (pygame.K_RIGHT, pygame.K_d):
+                    self.held_direction = 1
+                    self.move_held_time = pygame.time.get_ticks() / 1000
                     self.tetromino.move(1, 0)
+                    self.last_move_repeat = self.move_held_time
+
+                elif event.key in (pygame.K_DOWN, pygame.K_s):
+                    if not self.soft_drop:
+                        self.soft_drop = True
+                        self.tetromino.change_fall_delay(SOFT_DROP_DELAY)
                     
-                if event.key == pygame.K_SPACE:
+                elif event.key == pygame.K_SPACE:
                     lock_above = self.tetromino.hard_drop()
                     if lock_above:
                         self.game_over = True
@@ -149,6 +156,10 @@ class Game:
                 if event.key in (pygame.K_DOWN, pygame.K_s):
                     self.soft_drop = False
                     self.tetromino.reset_fall_delay()
+                elif event.key in (pygame.K_LEFT, pygame.K_a) and self.held_direction == -1:
+                    self.held_direction = 0
+                elif event.key in (pygame.K_RIGHT, pygame.K_d) and self.held_direction == 1:
+                    self.held_direction = 0
 
     def update_window(self):
         self.win.fill((0, 0, 0))  # Fill the window with black color
@@ -177,7 +188,9 @@ class Game:
             temp_tetromino.swap_board(self.next_board, y=idx * 4 + 1, lock=True)
 
         self.hold_swapped = False
-        self.soft_drop = False    
+        if self.soft_drop:
+            self.soft_drop = False
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_DOWN))  # Simulate soft drop key press to reset state
         return Tetromino(shape_name=tetromino_name, board=self.board, level=self.level)
     
     def check_level_up(self):
@@ -203,6 +216,20 @@ class Game:
 
             self.tetromino.swap_board(self.board)
         self.hold_swapped = True
+
+    def _handle_das_arr(self):
+        if self.held_direction == 0:
+            return
+
+        current_time = pygame.time.get_ticks() / 1000
+        
+        if current_time - self.move_held_time >= DAS_DELAY:
+            
+            if current_time - self.last_move_repeat >= ARR_DELAY:
+                
+                # Выполняем движение и сбрасываем ARR таймер
+                self.tetromino.move(self.held_direction, 0)
+                self.last_move_repeat = current_time
 
     def print_stats(self):
         score_render = self.font.render(f"Score: {self.score}", 1, "yellow")
