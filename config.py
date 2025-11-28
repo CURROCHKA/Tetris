@@ -15,7 +15,9 @@ VERTICAL_MARGIN_RATIO = 8
 SOFT_DROP_DELAY = 0.05  # seconds per cell when soft dropping
 MOVE_DELAY = 0.1        # seconds between moves when holding left/right
 DAS_DELAY = 0.25        # Задержка до начала DAS (0.25 сек)
-ARR_DELAY = 0.05
+ARR_DELAY = 0.05        # Скорость ARR (0.05 сек)
+LOCK_DELAY = 0.25        # seconds before piece locks in place after touching down
+MAX_LOCK_RESETS = 10    # maximum number of lock delay resets per piece
 
 TETROMINOS_COLORS = {
     "I": (0, 255, 255),

@@ -8,7 +8,8 @@ from config import (
     TETROMINOS_COLORS,
     BOARD_LINE_THICKNESS,
     LEVEL_SPEEDS,
-    MOVE_DELAY,
+    LOCK_DELAY,
+    MAX_LOCK_RESETS,
 )
 
 
@@ -23,9 +24,10 @@ class Tetromino:
         self.x, self.y = 0, 0
         self.rotation = 0
         self.reset_position()
-
         self.last_fall = pygame.time.get_ticks() / 1000
         self.falling_delay = LEVEL_SPEEDS[level]
+        self.lock_resets = 0
+        self.lock_start = 0
     
     def is_valid_position(self, dx=0, dy=0, rotation=None):
         """Проверяет валидность позиции фигуры"""
@@ -50,8 +52,12 @@ class Tetromino:
         current_time = pygame.time.get_ticks() / 1000
         if current_time - self.last_fall >= self.falling_delay:
             if not self.move(0, 1):
-                locked_above = self.lock()
-                return True, locked_above  # Фигура зафиксирована
+                if self.lock_start == 0:
+                    self.lock_start = current_time
+                elif current_time - self.lock_start >= LOCK_DELAY:
+                    locked_above = self.lock()
+                    return True, locked_above  # Фигура зафиксирована
+                # return False, False  # Фигура не зафиксирована
             self.last_fall = current_time
         return False, False  # Фигура не зафиксирована
 
@@ -72,6 +78,7 @@ class Tetromino:
             self.y = old_y + dy
 
             if self.is_valid_position():
+                self.check_lock_resets()
                 return True  # Вращение успешно
 
         # Если ни один вариант не подошел - откатываем
@@ -94,6 +101,7 @@ class Tetromino:
         if self.is_valid_position(dx, dy):
             self.x += dx
             self.y += dy
+            self.check_lock_resets()
             return True
         return False
     
@@ -161,8 +169,13 @@ class Tetromino:
         if lock:
             self.lock()
 
-    def change_fall_delay(self, new_delay: float):
+    def set_fall_delay(self, new_delay: float):
         self.falling_delay = new_delay
 
     def reset_fall_delay(self):
         self.falling_delay = LEVEL_SPEEDS[self._level]
+
+    def check_lock_resets(self):
+        if self.lock_start != 0 and self.lock_resets < MAX_LOCK_RESETS:
+            self.lock_start = pygame.time.get_ticks() / 1000
+            self.lock_resets += 1

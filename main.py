@@ -31,7 +31,6 @@ from config import (
 # TODO: add start screen and game over screen
 # TODO: add high score tracking
 # TODO: add settings menu
-# TODO: DAS and ARR implementation
 
 
 class Game:
@@ -134,7 +133,7 @@ class Game:
                 elif event.key in (pygame.K_DOWN, pygame.K_s):
                     if not self.soft_drop:
                         self.soft_drop = True
-                        self.tetromino.change_fall_delay(SOFT_DROP_DELAY)
+                        self.tetromino.set_fall_delay(SOFT_DROP_DELAY)
                     
                 elif event.key == pygame.K_SPACE:
                     lock_above = self.tetromino.hard_drop()
