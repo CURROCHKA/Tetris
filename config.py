@@ -1,13 +1,18 @@
 WIDTH = 800
 HEIGHT = 600
 FPS = 60
+FONT_NAME = "consolas"
+FONT_SIZE = WIDTH // 30
 
 # Width, Height in blocks
 BOARD_SIZE = (10, 20)     
 HOLD_BOARD_SIZE = (4, 4)
-NEXT_BOARD_SIZE = (4, 12)
+NUM_NEXT_BLOCKS = 3
+NEXT_BOARD_SIZE = (4, 4 * NUM_NEXT_BLOCKS)
 
 BOARD_LINE_THICKNESS = 1
+
+STATS_BOX_PADDING = 15
 
 HORIZONTAL_MARGIN_RATIO = 3
 VERTICAL_MARGIN_RATIO = 8
@@ -18,6 +23,9 @@ DAS_DELAY = 0.25        # Задержка до начала DAS (0.25 сек)
 ARR_DELAY = 0.05        # Скорость ARR (0.05 сек)
 LOCK_DELAY = 0.25        # seconds before piece locks in place after touching down
 MAX_LOCK_RESETS = 10    # maximum number of lock delay resets per piece
+
+HEADERS_COLOR = (255, 255, 255)
+STATS_COLOR = (255, 255, 0)
 
 TETROMINOS_COLORS = {
     "I": (0, 255, 255),
