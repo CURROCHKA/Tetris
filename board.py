@@ -8,7 +8,7 @@ from config import (
 
 
 class Board:
-    def __init__(self, x: float, y: float, block_size: int, board_size: tuple[int, int]):
+    def __init__(self, x: float, y: float, block_size: float, board_size: tuple[int, int]):
         self.x = x
         self.y = y
         self.width, self.height = board_size

@@ -1,7 +1,10 @@
 from random import shuffle
-from math import sqrt
+from math import sqrt, floor
 
 import pygame
+import pygame_widgets
+
+from pygame_widgets.button import Button
 
 from tetromino import Tetromino
 from board import Board
@@ -29,6 +32,7 @@ from config import (
     STATS_COLOR,
     BOARD_LINE_COLOR,
     STATS_BOX_PADDING,
+    BACKGROUND_COLOR,
 )
 
 
@@ -52,7 +56,7 @@ class Game:
         # Calculate block size to fit the board within the window with margins
         # 20x * 10x = S
         # x = sqrt(S / 200)
-        block_size = round(
+        block_size = (
             sqrt(
                 (WIDTH - 2 * horizontal_margin)
                 * (HEIGHT - vertical_margin)
@@ -86,12 +90,15 @@ class Game:
         self.hold_swapped = False
 
         self.soft_drop = False
-        self.last_move_repeat = 0  # Время последнего повторного движения
-        self.move_held_time = 0  # Время, в течение которого клавиша удерживается
-        self.held_direction = (
-            0  # Направление удерживаемого движения (-1 для влево, 1 для вправо)
-        )
+        self.last_move_time = 0
+        self.move_held_time = 0
+        self.held_direction = 0
 
+        self.is_new_game = True
+        self.is_paused = True
+        self.pause_surface = pygame.Surface((WIDTH, HEIGHT))
+        self.pause_surface.fill((128, 128, 128))
+        self.pause_surface.set_alpha(128)
         self.game_over = False
         self.total_lines_cleared = 0
         self.score = 0
@@ -127,16 +134,60 @@ class Game:
         self.hold_render = self.font.render("HOLD", 1, HEADERS_COLOR)
         self.next_render = self.font.render("NEXT", 1, HEADERS_COLOR)
 
+        button_width = WIDTH * 0.3
+        button_height = HEIGHT * 0.1
+        self.start_button = Button(
+            self.win,
+            WIDTH / 2 - button_width / 2,
+            HEIGHT / 2 - button_height / 2 - 10 - button_height,
+            button_width,
+            button_height,
+            text="PLAY",
+            radius=20,
+            font=self.font,
+            onClick=self.pause,
+        )
+        self.settings_button = Button(
+            self.win,
+            WIDTH / 2 - button_width / 2,
+            HEIGHT / 2 - button_height / 2,
+            button_width,
+            button_height,
+            text="SETTINGS",
+            radius=20,
+            font=self.font,
+        )
+
+        self.exit_button = Button(
+            self.win,
+            WIDTH / 2 - button_width / 2,
+            HEIGHT / 2 + button_height / 2 + 10,
+            button_width,
+            button_height,
+            text="EXIT",
+            radius=20,
+            font=self.font,
+            onClick=self.stop_game,
+        )
+
         pygame.display.set_caption("TETRIS")
 
     def run(self):
         while self.running:
-            if self.game_over:
-                self.running = False
+            if not self.tetromino:
+                self.tetromino = self.get_tetromino()
+
+            self.check_events()
+            self.update_window()
+            self.clock.tick(FPS)
+            
+            if self.is_paused:
+                # self.main_menu()
                 continue
 
-            if self.tetromino is None:
-                self.tetromino = self.get_tetromino()
+            if self.game_over:
+                self.stop_game()
+                continue
 
             block_locked, lock_above = self.tetromino.fall()
             if block_locked:
@@ -148,69 +199,82 @@ class Game:
             self._handle_das_arr()
             self.calculate_score()
             self.check_level_up()
-            self.check_events()
-            self.update_window()
-            self.clock.tick(FPS)  # Limit to 60 frames per second
-
+            
         pygame.quit()
+
+    def check_tetromino_keydown_event(self, event: pygame.event.Event):
+        if event.key in (pygame.K_LEFT, pygame.K_a):
+            self.held_direction = -1
+            self.move_held_time = pygame.time.get_ticks() / 1000
+            self.tetromino.move(-1, 0)
+            self.last_move_time = self.move_held_time
+        elif event.key in (pygame.K_RIGHT, pygame.K_d):
+            self.held_direction = 1
+            self.move_held_time = pygame.time.get_ticks() / 1000
+            self.tetromino.move(1, 0)
+            self.last_move_time = self.move_held_time
+
+        elif event.key in (pygame.K_DOWN, pygame.K_s):
+            if not self.soft_drop:
+                self.soft_drop = True
+                self.tetromino.set_fall_delay(SOFT_DROP_DELAY)
+
+        elif event.key == pygame.K_SPACE:
+            lock_above = self.tetromino.hard_drop()
+            if lock_above:
+                self.game_over = True
+            else:
+                self.tetromino = self.get_tetromino()
+
+        elif event.key == pygame.K_UP:
+            self.tetromino.rotate(1)
+        elif event.key == pygame.K_z:
+            self.tetromino.rotate(-1)
+
+        elif event.key == pygame.K_c:
+            if not self.hold_swapped:
+                self.swap_hold()
+
+    def check_tetromino_keyup_event(self, event: pygame.event.Event):
+        if event.key in (pygame.K_DOWN, pygame.K_s):
+                self.soft_drop = False
+                self.tetromino.reset_fall_delay()
+        elif (
+            event.key in (pygame.K_LEFT, pygame.K_a)
+            and self.held_direction == -1
+        ):
+            self.held_direction = 0
+        elif (
+            event.key in (pygame.K_RIGHT, pygame.K_d)
+            and self.held_direction == 1
+        ):
+            self.held_direction = 0
 
     def check_events(self):
         for event in pygame.event.get():
-            if event.type == pygame.QUIT or (
-                event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE
-            ):
-                self.running = False
+            if event.type == pygame.QUIT:
+                self.stop_game()
+
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.pause()
+                    self.soft_drop = False
+                    self.held_direction = 0
+                    self.last_move_time = 0
+                    self.move_held_time = 0
+                    self.tetromino.reset_fall_delay()
+                    # pygame.event.clear()
+                    # break
 
-                if event.key in (pygame.K_LEFT, pygame.K_a):
-                    self.held_direction = -1
-                    self.move_held_time = pygame.time.get_ticks() / 1000
-                    self.tetromino.move(-1, 0)
-                    self.last_move_repeat = self.move_held_time
-                elif event.key in (pygame.K_RIGHT, pygame.K_d):
-                    self.held_direction = 1
-                    self.move_held_time = pygame.time.get_ticks() / 1000
-                    self.tetromino.move(1, 0)
-                    self.last_move_repeat = self.move_held_time
-
-                elif event.key in (pygame.K_DOWN, pygame.K_s):
-                    if not self.soft_drop:
-                        self.soft_drop = True
-                        self.tetromino.set_fall_delay(SOFT_DROP_DELAY)
-
-                elif event.key == pygame.K_SPACE:
-                    lock_above = self.tetromino.hard_drop()
-                    if lock_above:
-                        self.game_over = True
-                    else:
-                        self.tetromino = self.get_tetromino()
-
-                elif event.key == pygame.K_UP:
-                    self.tetromino.rotate(1)
-                elif event.key == pygame.K_z:
-                    self.tetromino.rotate(-1)
-
-                elif event.key == pygame.K_c:
-                    if not self.hold_swapped:
-                        self.swap_hold()
+                if not self.is_paused:
+                    self.check_tetromino_keydown_event(event)
 
             if event.type == pygame.KEYUP:
-                if event.key in (pygame.K_DOWN, pygame.K_s):
-                    self.soft_drop = False
-                    self.tetromino.reset_fall_delay()
-                elif (
-                    event.key in (pygame.K_LEFT, pygame.K_a)
-                    and self.held_direction == -1
-                ):
-                    self.held_direction = 0
-                elif (
-                    event.key in (pygame.K_RIGHT, pygame.K_d)
-                    and self.held_direction == 1
-                ):
-                    self.held_direction = 0
+                if not self.is_paused:
+                    self.check_tetromino_keyup_event(event)            
 
     def update_window(self):
-        self.win.fill((0, 0, 0))  # Fill the window with black color
+        self.win.fill(BACKGROUND_COLOR)
 
         self.print_headers()
         self.print_stats()
@@ -220,7 +284,15 @@ class Game:
         self.next_board.draw(self.win)
 
         self.tetromino.draw(self.win)
-        pygame.display.flip()  # Update the display
+
+        if self.is_paused:
+            self.win.blit(self.pause_surface, (0, 0))
+            pygame_widgets.update(pygame.event.get())
+
+        pygame.display.flip()
+
+    def main_menu(self):
+        pass
 
     def get_tetromino(self):
         if len(self.tetrominos) < 7:
@@ -289,11 +361,11 @@ class Game:
 
         if current_time - self.move_held_time >= DAS_DELAY:
 
-            if current_time - self.last_move_repeat >= ARR_DELAY:
+            if current_time - self.last_move_time >= ARR_DELAY:
 
                 # Выполняем движение и сбрасываем ARR таймер
                 self.tetromino.move(self.held_direction, 0)
-                self.last_move_repeat = current_time
+                self.last_move_time = current_time
 
     def print_stats(self):
         pygame.draw.rect(self.win, BOARD_LINE_COLOR, self.stats_box, width=1)
@@ -362,6 +434,12 @@ class Game:
                 self.next_board.y - self.next_render.get_height(),
             ),
         )
+
+    def pause(self):
+        self.is_paused = not self.is_paused
+
+    def stop_game(self):
+        self.running = False
 
 
 if __name__ == "__main__":

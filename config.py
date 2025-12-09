@@ -24,6 +24,8 @@ ARR_DELAY = 0.05        # Скорость ARR (0.05 сек)
 LOCK_DELAY = 0.25        # seconds before piece locks in place after touching down
 MAX_LOCK_RESETS = 10    # maximum number of lock delay resets per piece
 
+BACKGROUND_COLOR = (0, 0, 0)
+
 HEADERS_COLOR = (255, 255, 255)
 STATS_COLOR = (255, 255, 0)
 
