@@ -1,5 +1,7 @@
 import pygame
 
+from math import sin
+
 from config import (
     BOARD_BLOCK_COLOR,
     BOARD_LINE_COLOR,
@@ -74,6 +76,18 @@ class Board:
                         self.block_size - BOARD_LINE_THICKNESS,
                     ),
                 )
+
+    def draw_gradient(self):
+        current_time = pygame.time.get_ticks() / 1000
+
+        for row in range(self.height):
+            for column in range(self.width):
+                r = int((sin((row + current_time * 1.5) * 0.5) + 1) * 128)
+                g = int((sin((column + current_time * 1.5) * 0.5) + 1) * 128)
+                b = int((sin((row + column + current_time * 1.5) * 0.5) + 1) * 128)
+                color = (r, g, b, 255)
+
+                self.colors[row][column] = color
 
     def reset(self):
         self.grid = [[0 for _ in range(self.width)] for _ in range(self.height)]

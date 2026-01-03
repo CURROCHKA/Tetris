@@ -69,6 +69,13 @@ class Game:
             block_size=block_size,
             board_size=BOARD_SIZE,
         )
+        
+        self.hide_board = Board(
+            x=horizontal_margin,
+            y=vertical_margin,
+            block_size=block_size,
+            board_size=BOARD_SIZE,
+        )
 
         self.hold_board = Board(
             x=horizontal_margin / 2 - HOLD_BOARD_SIZE[0] * block_size / 2,
@@ -287,6 +294,8 @@ class Game:
 
         if self.is_paused:
             self.win.blit(self.pause_surface, (0, 0))
+            self.hide_board.draw_gradient()
+            self.hide_board.draw(self.win)
             pygame_widgets.update(pygame.event.get())
 
         pygame.display.flip()
